@@ -12,19 +12,18 @@ namespace Calculator
 
             string input_rpn = "";
 
-            int i = 0;
             string element = "";
 
             Stack<char> operators = new Stack<char>();
 
             //Parse
-            while (i < input.Length)
+            for (int i = 0; i < input.Length; i++)
             {
                 //числа
                 if ((input[i] >= '0' && input[i] <= '9') || input[i] == '.')
                 {
                     element += input[i];
-                    i++;
+                    
                     continue;
                 }
                 //операции
@@ -33,12 +32,23 @@ namespace Calculator
                     input_rpn = input_rpn + element + ' '; //очистка переменной числа
                     element = "";
 
+                    if (input[i] == '-' && (i == 0 || input[i - 1] == '('))
+                    {
+                        input_rpn += "0 ";
+
+                        while (operators.Count != 0 && operators.Peek() != '(')
+                        {
+                            input_rpn = input_rpn + operators.Pop() + ' ';
+                        }
+
+                        operators.Push(input[i]);
+
+                        continue;
+                    }
 
                     if (input[i] == '(')
                     {
                         operators.Push(input[i]);
-
-                        i++;
 
                         continue;
                     }
@@ -52,8 +62,6 @@ namespace Calculator
 
                         operators.Pop();
 
-                        i++;
-
                         continue;//**************добавить проверку на ошибки несогласования скобок-------------------
                     }
 
@@ -65,8 +73,6 @@ namespace Calculator
                         }
 
                         operators.Push(input[i]);
-
-                        i++;
 
                         continue;
                     }
@@ -80,7 +86,18 @@ namespace Calculator
 
                         operators.Push(input[i]);
 
-                        i++;
+                        continue;
+                    }
+
+                    if (input[i] == '^')
+                    {
+                        /*
+                        while (operators.Count != 0 && (operators.Peek() == префиксные функции))
+                        {
+                            input_rpn = input_rpn + operators.Pop() + ' ';
+                        }
+                        */
+                        operators.Push(input[i]);
 
                         continue;
                     }
@@ -107,7 +124,7 @@ namespace Calculator
 
             string[] elements = input_rpn.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            for (i = 0; i < elements.Length; i++)
+            for (int i = 0; i < elements.Length; i++)
             {
                 if (buffer.Count >= 2 && elements[i] == "+")
                 {
@@ -145,6 +162,16 @@ namespace Calculator
                     double a = buffer.Pop();
 
                     buffer.Push(a / b);
+
+                    continue;
+                }
+
+                if (buffer.Count >= 2 && elements[i] == "^")
+                {
+                    double b = buffer.Pop();
+                    double a = buffer.Pop();
+
+                    buffer.Push(Math.Pow(a, b));
 
                     continue;
                 }
